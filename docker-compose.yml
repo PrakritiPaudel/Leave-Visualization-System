@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"  # Adjust if necessary
+    
+    volumes:
+      - .:/myapp  # Ensure this path matches the WORKDIR in Dockerfile
+      # - .env:/myapp/.env  # Mount the .env file
+    depends_on:
+      - postgres
+    networks:
+      - backend
+  
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8502:8501"  # Port for Streamlit
+    # volumes:
+    #   - .:/myapp  # Ensure this path matches the WORKDIR in Dockerfile
+    volumes:
+     - ./src/visualization:/myapp/visualization # Mount only the visualization folder
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    
+
+  postgres:
+    image: postgres:15  # You can specify the version you want
+    container_name: my_postgres_new
+    environment:
+      POSTGRES_USER: prakriti
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+      POSTGRES_HOST_AUTH_METHOD: trust 
+      # not supported in windows 
+    ports:
+      - "5432:5432"  # Adjust port mapping if necessary
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge 

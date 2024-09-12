@@ -1,0 +1,17 @@
+# Python
+*.pyc
+__pycache__/
+
+# Environment
+.env
+.env.streamlit
+
+# Virtual environment
+venv/
+*.egg-info/
+
+# Docker
+*.dockerignore
+
+# Misc
+*.log
