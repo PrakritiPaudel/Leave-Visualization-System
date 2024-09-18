@@ -12,12 +12,13 @@
 #     return {"message": "Raw data ingested"}
 
 from typing import Optional
-from fastapi import FastAPI,UploadFile
+from fastapi import FastAPI,UploadFile,HTTPException
 from src.data_ingestion.api_fetch import ingest_raw_data, insert_data_to_db, create_schema
 from src.transformation.dbo.transform import transform_data
 from src.services.leave_service import find_leaves, find_leave_types
 from src.services.upload_service import populate_from_file
 from src.services.fiscal_service import find_fiscal_years
+from src.services.employee_service import find_employee
 import logging
 
 app = FastAPI()
@@ -31,13 +32,20 @@ logger.setLevel(logging.DEBUG)
 async def root():
     return {"message": "Hello World"}
 
-@app.post("/apifetch")
+@app.post("/ingest")
 async def api_fetch():
     ingest_raw_data()
     # new added
-    transform_data() 
+    # transform_data() 
 
-    return {"message": "Raw data ingested and transformed"}
+    return {"message": "Raw data ingested"}
+
+@app.post("/transform")
+async def transform_raw_data():
+    # ingest_raw_data()
+    # new added
+    transform_data() 
+    return {"message": "Raw data transformed"}
 
 @app.get("/leaves")
 async def get_leaves(start_date: str , end_date: str ):
@@ -56,30 +64,32 @@ async def get_leave_types():
 async def get_fiscal_years():
     return find_fiscal_years()
 
+# @app.get("/employee/{emp_id}")
+# async def get_employee(emp_id: int):
+#     print (emp_id)
+#     return find_employee(emp_id)
+
+@app.get("/employee/{emp_id}")
+async def get_employee(emp_id: int):
+    try:
+        data = find_employee(emp_id)
+        if data is None:
+            raise HTTPException(status_code=500, detail="Failed to fetch employee details")
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# @app.get("/employee/{emp_id}")
+# async def get_employee(emp_id: int):
+#     result = find_employee(emp_id)
+    
+#     if "error" in result:
+#         raise HTTPException(status_code=500, detail=result["error"])
+    
+#     return result
+
 @app.post("/upload")
 async def upload_file(file: UploadFile):
     await populate_from_file(file)
     return 'Hello World'
-    # file_path = os.path.join(file.filename)
-    # print(file_path)
-    
-    # # Open a file at the defined path and write the contents of the uploaded file
-    # df = pd.read_csv(file_path, sep='|')
-    # create_schema()
-    # insert_data_to_db(df, 'api_data', schema='raw')
 
-    #  # Extract allocations data
-    # allocations_df = extract_allocations(df)
-
-    # print(allocations_df)
-
-    # # Insert allocations data into raw.allocation_data
-    # if not allocations_df.empty:
-    #     # Ensure only the columns 'id', 'name', 'type', and 'empId' are present
-    #     allocations_df = allocations_df[['id', 'name', 'type', 'empId']]
-    #     insert_data_to_db(allocations_df, 'allocation_data', schema='raw')
-
-
-    # transform_data() 
-    # print(df)
-    # return(file.filename)

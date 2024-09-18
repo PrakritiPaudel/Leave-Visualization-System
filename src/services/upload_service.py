@@ -60,6 +60,5 @@ async def populate_from_file(file):
 
 
     transform_data() 
-    print(df)
-    return(file.filename)
+    # return(file.filename)
 

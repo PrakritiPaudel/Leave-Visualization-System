@@ -1,14 +1,21 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from dotenv import load_dotenv
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 import sys
 import os
-
+import requests
 # Add the path where your transformation scripts are located
 sys.path.append('/home/prakriti/project-leave-visualization-system')
 
-from src.transformation.dbo.transform import transform_data as transform_data_function
+# Load environment variables from .env file
+load_dotenv()
+
+# # Get the api endpoint URL from the environment variable
+api_endpoint = os.getenv('FASTAPI_URL')
+print(api_endpoint)
+
 
 # Define default_args for the DAG
 default_args = {
@@ -29,17 +36,26 @@ dag = DAG(
     start_date=days_ago(1),
     catchup=False,
 )
-# Define a function to run all transformation tasks
-def run_transform_data():
-    transform_data_function()
-    print("Data transformed and inserted into dbo tables successfully.")
+def ingest_raw_data():
+    response = requests.post(api_endpoint+'/ingest')
+    return response.json()
+
+def tranform_and_load_data():
+    response = requests.post(api_endpoint+'/transform')
+    return response.json()
 
 # Define the task using PythonOperator
+ingest_data_task = PythonOperator(
+    task_id='ingest_data_task',
+    python_callable=ingest_raw_data,
+    dag=dag,
+)
+
 transform_data_task = PythonOperator(
     task_id='transform_data_task',
-    python_callable=run_transform_data,
+    python_callable=tranform_and_load_data,
     dag=dag,
 )
 
 # Set task dependencies if you have multiple tasks, for now, it’s a single task
-transform_data_task
+ingest_data_task >> transform_data_task

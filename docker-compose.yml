@@ -13,6 +13,7 @@ services:
       - postgres
     networks:
       - backend
+      - frontend
   
   streamlit:
     build:
@@ -20,14 +21,13 @@ services:
       dockerfile: Dockerfile.streamlit
     ports:
       - "8502:8501"  # Port for Streamlit
-    # volumes:
-    #   - .:/myapp  # Ensure this path matches the WORKDIR in Dockerfile
+    
     volumes:
-     - ./src/visualization:/myapp/visualization # Mount only the visualization folder
+     - ./visualization:/myapp/visualization # Mount only the visualization folder
     depends_on:
-      - postgres
+      - app
     networks:
-      - backend
+      - frontend
     
 
   postgres:
@@ -52,3 +52,5 @@ volumes:
 networks:
   backend:
     driver: bridge 
+  frontend:
+    driver: bridge
