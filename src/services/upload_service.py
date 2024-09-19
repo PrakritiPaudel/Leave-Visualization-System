@@ -44,6 +44,7 @@ async def populate_from_file(file):
     csv_string = StringIO(file_content.decode("utf-8"))
     # Open a file at the defined path and write the contents of the uploaded file
     df = pd.read_csv(csv_string, sep='|')
+    print(df)
     create_schema()
     insert_data_to_db(df, 'api_data', schema='raw')
 

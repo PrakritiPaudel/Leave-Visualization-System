@@ -30,7 +30,7 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     .status-approved { color: green; }
-    .status-REJECTED { color: red; }
+    .status-rejected { color: red; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -79,7 +79,7 @@ if st.session_state.get('show_file_upload', False):
         st.header("Load new file from device or drag it here")
         uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"], on_change=upload_file, key='file')
 else:
-    df = load_data(start_date, end_date, selected_leave_type_id)
+    df = load_data(start_date, end_date)
 
     with tab1:
         st.header("Leave Overview")
@@ -108,7 +108,7 @@ else:
                 y='leave_days',
                 title='Total Leave Days by Status',
                 color='leave_status',
-                color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
+                color_discrete_map={'Approved': 'green', 'Rejected': 'red', 'Pending': 'yellow'},
                 height=400
             )
             leave_status_chart.update_layout(margin=dict(l=20, r=20, t=40, b=20))
@@ -177,12 +177,15 @@ else:
         st.header("Employee Leave Analysis")
         
         # Load employee data
-        df = load_data(start_date, end_date, selected_leave_type_id)
+        df = load_data(start_date, end_date)
 
         if df is None or df.empty:
             st.warning("No leave data available. Please check your data source or filters.")
         else:
             # Check available columns
+            st.write("Available columns:", df.columns.tolist())
+            
+            # Try to identify employee ID and name columns
             emp_id_col = next((col for col in df.columns if 'id' in col.lower()), None)
             emp_name_col = next((col for col in df.columns if 'name' in col.lower()), None)
             
@@ -201,31 +204,31 @@ else:
             st.markdown("""
                 <style>
                 .employee-select-container {
-                    margin-bottom: 20px;
+                    margin-top: -15px;
                 }
                 .employee-select-label {
-                    font-size: 18px;
-                    font-weight: bold;
-                    margin-bottom: 5px;
-                    color: #333;
+                    font-size: 16px !important;
+                    font-weight: bold !important;
+                    margin-bottom: 2px !important;
+                    display: inline-block;
+                }
+                .employee-select {
+                    font-size: 14px !important;
+                    padding: 2px 5px !important;
+                    border: 1px solid #ccc !important;
+                    border-radius: 4px !important;
+                    width: auto !important;
+                    display: inline-block !important;
                 }
                 .stSelectbox > div > div {
-                    border: 2px solid #ccc;
-                    border-radius: 4px;
-                    background-color: white;
-                }
-                .stSelectbox > div > div > div {
-                    padding: 5px;
-                }
-                .stSelectbox [data-baseweb="select"] {
-                    height: auto;
+                    min-height: 20px !important;
                 }
                 </style>
                 """, unsafe_allow_html=True)
 
-            # Use HTML to create the layout similar to the image
+            # Use HTML to create the compact layout
             st.markdown('<div class="employee-select-container">', unsafe_allow_html=True)
-            st.markdown('<div class="employee-select-label">Select an Employee:</div>', unsafe_allow_html=True)
+            st.markdown('<span class="employee-select-label">Select an Employee:</span>', unsafe_allow_html=True)
             selected_employee_name = st.selectbox("", options=employee_names, key="employee_select", label_visibility="collapsed")
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -265,7 +268,7 @@ else:
                                 y='leave_days',
                                 title='Leave Days by Status',
                                 color='leave_status',
-                                color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
+                                color_discrete_map={'Approved': 'green', 'Rejected': 'red', 'Pending': 'yellow'},
                                 height=300
                             )
                             employee_leave_status.update_layout(margin=dict(l=20, r=20, t=40, b=20))
@@ -297,7 +300,7 @@ else:
                     display_columns = [col for col in ['start_date', 'end_date', 'leave_type', 'leave_status', 'leave_days'] if col in employee_df.columns]
                     if display_columns:
                         styled_df = employee_df[display_columns].style.applymap(
-                            lambda x: 'color: green' if x == 'APPROVED' else ('color: red' if x == 'REJECTED' else ''),
+                            lambda x: 'color: green' if x == 'Approved' else ('color: red' if x == 'Rejected' else ''),
                             subset=['leave_status'] if 'leave_status' in display_columns else []
                         )
                         st.dataframe(styled_df)
@@ -326,7 +329,7 @@ else:
                 leave_status = row['leave_status']
                 total_days = row['leave_days']
                 
-                status_color = 'status-approved' if leave_status == 'APPROVED' else 'status-REJECTED' if leave_status == 'REJECTED' else ''
+                status_color = 'status-approved' if leave_status == 'Approved' else 'status-rejected' if leave_status == 'Rejected' else ''
                 
                 st.markdown(f"""
                     <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px;">

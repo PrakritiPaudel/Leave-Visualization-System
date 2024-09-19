@@ -16,11 +16,11 @@ def transform_data():
     populate_department_data()
     populate_employee_data()
     populate_allocation_data()
+    populate_fiscal_data()
     populate_leave_type_data()
     populate_leave_data()
     populate_departmental_leave_impact()
     populate_employee_leave_patterns()
-    populate_fiscal_data()
     populate_leave_issuer_efficiency()
     populate_leave_summary_data()
     

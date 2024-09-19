@@ -84,7 +84,9 @@ def parse_json_and_insert(api_data):
         main_data.append(main_entry)
     
     df_main = pd.DataFrame(main_data)
+    print('testttttt',df_main)
     df_nested = pd.DataFrame(nested_data)
+    print(df_nested)
 
     insert_data_to_db(df_main, 'api_data', schema='raw')
     insert_data_to_db(df_nested, 'allocation_data', schema='raw')

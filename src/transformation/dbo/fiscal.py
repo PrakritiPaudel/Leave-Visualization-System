@@ -9,6 +9,7 @@ def populate_fiscal_data():
             # Query to fetch distinct fiscal data
             fiscal_query = """
             SELECT DISTINCT
+                ad."fiscalId" AS id,
                 CAST(ad."fiscalStartDate" AS DATE) AS fiscal_start_date,
                 CAST(ad."fiscalEndDate" AS DATE) AS fiscal_end_date,
                 ad."fiscalIsCurrent"
@@ -19,11 +20,12 @@ def populate_fiscal_data():
             for _, row in fiscal_df.iterrows():
                 # Insert data with conflict handling
                 insert_fiscal_query = """
-                INSERT INTO dbo.fiscal (fiscal_start_date, fiscal_end_date, fiscal_is_current)
-                VALUES (:fiscal_start_date, :fiscal_end_date, :fiscalIsCurrent)
+                INSERT INTO dbo.fiscal (id, fiscal_start_date, fiscal_end_date, fiscal_is_current)
+                VALUES (:id, :fiscal_start_date, :fiscal_end_date, :fiscalIsCurrent)
                 ON CONFLICT (fiscal_start_date, fiscal_end_date) DO NOTHING;
                 """
                 connection.execute(text(insert_fiscal_query), {
+                    'id': row['id'],
                     'fiscal_start_date': row['fiscal_start_date'],
                     'fiscal_end_date': row['fiscal_end_date'],
                     'fiscalIsCurrent': row['fiscalIsCurrent']

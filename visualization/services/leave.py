@@ -15,8 +15,15 @@ if api_endpoint is None:
     raise ValueError("API_ENDPOINT environment variable is not set")
 
 
-def load_data(start_date, end_date):
-    response = requests.get(f"{api_endpoint}/leaves?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}")
+def load_data(start_date, end_date, leave_type_id):
+    # response = requests.get(f"{api_endpoint}/leaves?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}")
+    params = {
+    'start_date': start_date.isoformat(),
+    'end_date': end_date.isoformat(),
+    'leave_type': leave_type_id
+    }
+    response = requests.get(f"{api_endpoint}/leaves", params=params)
+
     data = response.json()
     return pd.DataFrame.from_dict(data)
 
