@@ -12,7 +12,7 @@ def find_employee(emp_id):
       LEFT JOIN dbo.allocation a ON a.emp_id = e.emp_id 
       LEFT JOIN dbo.leave l ON l.employee_id = e.emp_id 
       LEFT JOIN dbo.leave_type lt ON l.leave_type_id = lt.id
-      WHERE e.emp_id = '{str(emp_id)}';
+      WHERE e.emp_id = %(emp_id)s
     """
     #   
     # # Execute the query with emp_id as a parameter
@@ -24,8 +24,7 @@ def find_employee(emp_id):
     try:
         # Execute the query with emp_id as a parameter
         with db_engine.connect() as connection:
-            df = pd.read_sql(employee_query, connection)
-            print('testcolumnssssssss',df)
+            df = pd.read_sql(employee_query, connection, params={'emp_id': str(emp_id)})
         
         if df.empty:
             return {"error": "No data found for this employee"}

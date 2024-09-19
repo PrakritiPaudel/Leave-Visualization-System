@@ -12,12 +12,17 @@ def find_leaves(start_date, end_date, leave_type_id):
       LEFT JOIN dbo.allocation a ON a.emp_id = e.emp_id 
       LEFT JOIN dbo.leave l ON l.employee_id = e.emp_id 
       LEFT JOIN dbo.leave_type lt ON l.leave_type_id = lt.id 
-    WHERE start_date BETWEEN '{start_date}' AND '{end_date}' and l.leave_type_id = '{leave_type_id}'
+    WHERE start_date BETWEEN %(start_date)s AND %(end_date)s
     """
+    # and l.leave_type_id = '{leave_type_id}'
+    
+    # Add leave_type_id filter only if it's not 'all'
+    if(leave_type_id) :
+        query += f" AND l.leave_type_id = %(leave_type_id)s"
 
     """Load data from the database based on a SQL query."""
     with db_engine.connect() as connection:
-        df = pd.read_sql(query, connection)
+        df = pd.read_sql(query, connection, params={'start_date':start_date, 'end_date': end_date, 'leave_type_id':leave_type_id })
     return df.to_dict()
 
 def find_leave_types():

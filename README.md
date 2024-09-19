@@ -58,16 +58,10 @@ The project is composed of three main services:
 
 ## Networks
 
-The application uses two separate networks:
+The application uses two separate docker networks for inter container communication:
 
 - `backend`: For communication between the server(app) and database
 - `frontend`: For communication between the server(app) and Streamlit service
-
-## Volumes
-
-- The app service mounts the current directory to `/myapp` in the container
-- The Streamlit service mounts the `./visualization` directory to `/myapp/visualization` in the container
-- PostgreSQL data is persisted in the `postgres_data` volume
 
 ## Running the Application
 
@@ -84,12 +78,6 @@ The application uses two separate networks:
    ```
    docker-compose down
    ```
-
-## Development
-
-- For the server changes, edit files in the src directory. Changes will be reflected immediately due to volume mounting.
-- For Streamlit visualizations, edit files in the `./visualization` directory.
-
 
 ## Troubleshooting
 

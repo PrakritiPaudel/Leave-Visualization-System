@@ -48,7 +48,7 @@ async def transform_raw_data():
     return {"message": "Raw data transformed"}
 
 @app.get("/leaves")
-async def get_leaves(start_date: str , end_date: str , leave_type: str):
+async def get_leaves(start_date: str , end_date: str , leave_type: str|None=None):
     return find_leaves(start_date, end_date, leave_type)
 
 @app.get("/leave-types")
@@ -91,4 +91,5 @@ async def get_employee(emp_id: int):
 @app.post("/upload")
 async def upload_file(file: UploadFile):
     await populate_from_file(file)
+    return{"message":"File uploaded successfully"}
 
