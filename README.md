@@ -113,8 +113,9 @@ Airflow is used for managing workflows, particularly for data ingestion and tran
 
 4. To run ingestion and transformation tasks, navigate to the DAGs section in the Airflow web interface and trigger the transform_data_funtion DAG.
 
-## System Architechture
-![alt text](<Leave Visualization.png>)
+## System Architecture
+![alt text](<Leave Visualization-1.png>)
+
 
 ## Leave Visualization Dashboard
 ![alt text](image.png)
