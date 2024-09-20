@@ -4,9 +4,7 @@ from src.db import db_engine
 
 def populate_leave_type_data():
     with db_engine.connect() as connection:
-        # Start a transaction
         with connection.begin():
-            # Populate the leave_type table
             leave_type_query = """
             SELECT DISTINCT
                 ad."leaveTypeId",
@@ -18,16 +16,27 @@ def populate_leave_type_data():
             """
             leave_type_df = pd.read_sql(leave_type_query, connection)
 
+            leave_type_df = leave_type_df.drop_duplicates(subset=['leaveTypeId', 'leaveType'])
+
             for _, row in leave_type_df.iterrows():
                 upsert_leave_type_query = """
+                WITH new_values (id, leave_type, default_days, transferable_days, is_consecutive) AS (
+                    VALUES (:leaveTypeId, :leaveType, :defaultDays, :transferableDays, :is_consecutive)
+                ),
+                upsert AS (
+                    UPDATE dbo.leave_type lt
+                    SET 
+                        default_days = nv.default_days,
+                        transferable_days = nv.transferable_days,
+                        is_consecutive = nv.is_consecutive
+                    FROM new_values nv
+                    WHERE (lt.id = nv.id) OR (lt.leave_type = nv.leave_type)
+                    RETURNING lt.*
+                )
                 INSERT INTO dbo.leave_type (id, leave_type, default_days, transferable_days, is_consecutive)
-                VALUES (:leaveTypeId, :leaveType, :defaultDays, :transferableDays, :is_consecutive)
-                ON CONFLICT (id)
-                DO UPDATE SET
-                    leave_type = EXCLUDED.leave_type,
-                    default_days = EXCLUDED.default_days,
-                    transferable_days = EXCLUDED.transferable_days,
-                    is_consecutive = EXCLUDED.is_consecutive;
+                SELECT id, leave_type, default_days, transferable_days, is_consecutive
+                FROM new_values
+                WHERE NOT EXISTS (SELECT 1 FROM upsert u WHERE u.id = new_values.id OR u.leave_type = new_values.leave_type);
                 """
                 connection.execute(text(upsert_leave_type_query), {
                     'leaveTypeId': row['leaveTypeId'],

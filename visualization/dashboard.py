@@ -23,7 +23,7 @@ st.markdown("""
     .main { padding: 2rem; }
     .stApp { background-color: #f0f2f6; }
     .chart-container {
-        background-color: white;
+        background-color: blue;
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         padding: 1rem;
@@ -35,6 +35,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🌴 Leave Visualization Dashboard")
+
+# Custom CSS to change sidebar background color
+st.markdown("""
+    <style>
+    /* Change background color of the sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #ADD8E6;
+    }
+
+    /* Optional: Add some padding */
+    [data-testid="stSidebar"] .css-1d391kg {
+        padding: 1rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Sidebar for controls
 with st.sidebar:
@@ -99,6 +114,33 @@ else:
         return df
 
     df = calculate_leave_days(df)
+    # Custom CSS to improve the look and feel
+    st.markdown("""
+        <style>
+        .main { padding: 2rem; }
+        .stApp { background-color: #f0f2f6; }
+        .metric-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
     with tab1:
         st.header("Leave Overview")
@@ -107,55 +149,127 @@ else:
         st.subheader("Key Metrics")
         col1, col2, col3, col4 = st.columns(4)
         if df is not None and not df.empty:
-            if 'leave_days' in df.columns:
-                col1.metric("Total Leave Days", f"{df['leave_days'].sum():.0f}")
-                col2.metric("Average Leave Duration", f"{df['leave_days'].mean():.1f} days")
-            else:
-                col1.metric("Total Leave Days", "N/A")
-                col2.metric("Average Leave Duration", "N/A")
-            
-            if 'employee_id' in df.columns:
-                col3.metric("Total Employees on Leave", df['employee_id'].nunique())
-            else:
-                col3.metric("Total Employees on Leave", "N/A")
-            
-            if 'leave_type_id' in df.columns:
-                most_common_leave_type = leave_type_dict.get(df['leave_type_id'].mode().iloc[0], "N/A")
-                col4.metric("Most Common Leave Type", most_common_leave_type)
-            else:
-                col4.metric("Most Common Leave Type", "N/A")
+            with col1:
+                total_leave_days = df['leave_days'].sum() if df is not None and not df.empty and 'leave_days' in df.columns else 'N/A'
+                st.markdown(f"""
+                <div class="metric-card" style="
+                    background-color: white;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 1rem;
+                    height: 100px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                ">
+                    <p class="metric-label" style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                        Total Leave Days
+                    </p>
+                    <p class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #000;">
+                        {total_leave_days}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with col2:
+                avg_leave_duration = df['leave_days'].mean() if df is not None and not df.empty and 'leave_days' in df.columns else 'N/A'
+                st.markdown(f"""
+                <div class="metric-card" style="
+                    background-color: white;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 1rem;
+                    height: 100px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                ">
+                    <p class="metric-label" style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                        Average Leave Duration
+                    </p>
+                    <p class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #000;">
+                        {avg_leave_duration:.1f} days
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with col3:
+                total_employees_on_leave = df['employee_id'].nunique() if df is not None and not df.empty and 'employee_id' in df.columns else 'N/A'
+                st.markdown(f"""
+                <div class="metric-card" style="
+                    background-color: white;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 1rem;
+                    height: 100px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                ">
+                    <p class="metric-label" style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                        Total Employees on Leave
+                    </p>
+                    <p class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #000;">
+                        {total_employees_on_leave}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with col4:
+                most_common_leave_type = leave_type_dict.get(df['leave_type_id'].mode().iloc[0], 'N/A') if df is not None and not df.empty and 'leave_type_id' in df.columns else 'N/A'
+                st.markdown(f"""
+                <div class="metric-card" style="
+                    background-color: white;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 1rem;
+                    height: 100px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                ">
+                    <p class="metric-label" style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                        Most Common Leave Type
+                    </p>
+                    <p class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #000;">
+                        {most_common_leave_type}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
 
             # Visualizations
-            if 'leave_status' in df.columns and 'leave_days' in df.columns:
-                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                leave_status_chart = px.bar(
-                    df.groupby('leave_status').agg({'leave_days': 'sum'}).reset_index(),
-                    x='leave_status',
-                    y='leave_days',
-                    title='Total Leave Days by Status',
-                    color='leave_status',
-                    color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
-                    height=400
-                )
-                leave_status_chart.update_layout(margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(leave_status_chart, use_container_width=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.subheader("Leave Analysis")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if 'leave_status' in df.columns and 'leave_days' in df.columns:
+                    leave_status_chart = px.bar(
+                        df.groupby('leave_status').agg({'leave_days': 'sum'}).reset_index(),
+                        x='leave_status',
+                        y='leave_days',
+                        title='Total Leave Days by Status',
+                        color='leave_status',
+                        color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
+                        height=400
+                    )
+                    leave_status_chart.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(leave_status_chart, use_container_width=True)
 
-            if 'leave_type_id' in df.columns:
-                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                leave_type_distribution = px.pie(
-                    df,
-                    names='leave_type_id',
-                    title='Leave Type Distribution',
-                    height=400,
-                    labels=leave_type_dict
-                )
-                leave_type_distribution.update_layout(margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(leave_type_distribution, use_container_width=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+            with col2:
+                if 'leave_type' in df.columns:
+                    leave_type_distribution = px.pie(
+                        df,
+                        names='leave_type',
+                        title='Leave Type Distribution',
+                        height=400,
+                        labels=leave_type_dict
+                    )
+                    leave_type_distribution.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(leave_type_distribution, use_container_width=True)
 
             if 'start_date' in df.columns and 'leave_days' in df.columns:
-                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
                 leave_days_over_time = px.line(
                     df.groupby('start_date').agg({'leave_days': 'sum'}).reset_index(),
                     x='start_date',
@@ -165,7 +279,6 @@ else:
                 )
                 leave_days_over_time.update_layout(margin=dict(l=20, r=20, t=40, b=20))
                 st.plotly_chart(leave_days_over_time, use_container_width=True)
-                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.warning("No data available for the selected period or filters.")
 
@@ -228,7 +341,7 @@ else:
                             if 'leave_type_id' in employee_df.columns:
                                 employee_leave_type = px.pie(
                                     employee_df,
-                                    names='leave_type_id',
+                                    names='leave_type',
                                     title='Leave Type Distribution',
                                     height=300,
                                     labels=leave_type_dict
@@ -258,17 +371,17 @@ else:
                             st.markdown('</div>', unsafe_allow_html=True)
 
                         st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                        if 'start_date' in employee_df.columns and 'leave_days' in employee_df.columns and 'leave_type_id' in employee_df.columns:
+                        if 'start_date' in employee_df.columns and 'leave_days' in employee_df.columns and 'leave_type' in employee_df.columns:
                             employee_leave_timeline = px.scatter(
                                 employee_df,
                                 x='start_date',
                                 y='leave_days',
                                 size='leave_days',
-                                color='leave_type_id',
+                                color='leave_type',
                                 hover_data=['leave_status'] if 'leave_status' in employee_df.columns else None,
                                 title='Leave History Timeline',
                                 height=400,
-                                labels={'leave_type_id': 'Leave Type'}
+                                labels={'employee_leave_type': 'Leave Type'}
                             )
                             employee_leave_timeline.update_layout(margin=dict(l=20, r=20, t=40, b=20))
                             st.plotly_chart(employee_leave_timeline, use_container_width=True)
@@ -277,7 +390,7 @@ else:
                         st.markdown('</div>', unsafe_allow_html=True)
 
                         st.subheader("Detailed Leave Records")
-                        display_columns = [col for col in ['start_date', 'end_date', 'leave_type_id', 'leave_status', 'leave_days'] if col in employee_df.columns]
+                        display_columns = [col for col in ['start_date', 'end_date', 'leave_type', 'leave_status', 'leave_days'] if col in employee_df.columns]
                         if display_columns:
                             styled_df = employee_df[display_columns].style.applymap(
                                 lambda x: 'color: green' if x == 'APPROVED' else ('color: red' if x == 'REJECTED' else ''),
@@ -294,30 +407,50 @@ else:
             st.warning("No data available for employee analysis.")
 
     with tab3:
-        st.header("Today's Leaves")
+        # st.header("Today's Leaves")
         today = date.today()
+        # Format the date
+        formatted_today = today.strftime("%B %d, %Y")  # Example: "September 19, 2024"
         if df is not None and not df.empty:
             df['start_date'] = pd.to_datetime(df['start_date']).dt.date
             df['end_date'] = pd.to_datetime(df['end_date']).dt.date
             today_leaves = df[(df['start_date'] <= today) & (df['end_date'] >= today)]
+            # st.markdown(today_leaves)
             
             if not today_leaves.empty:
-                st.subheader(f"Employees on Leave Today ({today})")
+                # Create a styled subheader with HTML and CSS
+                # Create a more refined styled subheader with HTML and CSS
+                st.markdown(
+                    f"""
+                    <div style='
+                        background-color: #f0f2f6; 
+                        padding: 10px; 
+                        border-radius: 10px; 
+                        border: 1px solid #ddd;
+                        text-align: center; 
+                        font-family: "Roboto", sans-serif; 
+                        color: #333;'>
+                        <h3 style='margin: 0; font-size: 24px;'>Employees on Leave Today</h3>
+                        <p style='font-size: 18px; color: #555;'>{formatted_today}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 
                 for _, row in today_leaves.iterrows():
-                    employee_id = row.get('employee_id', 'N/A')
-                    leave_type = leave_type_dict.get(row.get('leave_type_id', 'N/A'), 'N/A')
-                    leave_status = row.get('leave_status', 'N/A')
-                    total_days = row.get('leave_days', 'N/A')
+                    Name = row.get('employee_name', 'N/A')
+                    Leave_Type = leave_type_dict.get(row.get('leave_type_id', 'N/A'), 'N/A')
+                    Leave_Status = row.get('leave_status', 'N/A')
+                    Total_leave_days = row.get('leave_days', 'N/A')
                     
-                    status_color = 'status-approved' if leave_status == 'APPROVED' else 'status-REJECTED' if leave_status == 'REJECTED' else ''
+                    status_color = 'status-approved' if Leave_Status == 'APPROVED' else 'status-REJECTED' if Leave_Status == 'REJECTED' else ''
                 
                     st.markdown(f"""
                         <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-                            <h4>Employee ID: {employee_id}</h4>
-                            <p>Leave Type: {leave_type}</p>
-                            <p>Status: <span class="{status_color}">{leave_status}</span></p>
-                            <p>Total Days: {total_days}</p>
+                            <h4>Employee Name: {Name}</h4>
+                            <p>Leave Type: {Leave_Type}</p>
+                            <p>Status: <span class="{status_color}">{Leave_Status}</span></p>
+                            <p>Total Days: {Total_leave_days}</p>
                         </div>
                     """, unsafe_allow_html=True)
 
