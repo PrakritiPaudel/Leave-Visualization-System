@@ -16,18 +16,26 @@ if api_endpoint is None:
 
 
 def load_data(start_date, end_date, leave_type_id):
-    # response = requests.get(f"{api_endpoint}/leaves?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}")
-    params = {
-    'start_date': start_date.isoformat(),
-    'end_date': end_date.isoformat(),
-    'leave_type': leave_type_id
-    }
-    response = requests.get(f"{api_endpoint}/leaves", params=params)
+    try:
+        # response = requests.get(f"{api_endpoint}/leaves?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}")
+        params = {
+        'start_date': start_date.isoformat(),
+        'end_date': end_date.isoformat(),
+        'leave_type': leave_type_id
+        }
+        response = requests.get(f"{api_endpoint}/leaves", params=params)
+        response.raise_for_status()
 
-    data = response.json()
-    return pd.DataFrame.from_dict(data)
+        data = response.json()
+        return pd.DataFrame.from_dict(data)
+    except:
+        return pd.DataFrame.from_dict({})
 
 def load_leave_types():
-    response = requests.get(f"{api_endpoint}/leave-types")
-    data = response.json()
-    return pd.DataFrame.from_dict(data)
+    try:
+        response = requests.get(f"{api_endpoint}/leave-types")
+        response.raise_for_status()
+        data = response.json()
+        return pd.DataFrame.from_dict(data)
+    except:
+        return pd.DataFrame.from_dict({})

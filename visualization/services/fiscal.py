@@ -16,17 +16,21 @@ if api_endpoint is None:
 
 
 def load_fiscal_years():
-    response = requests.get(f"{api_endpoint}/fiscal-years")
-    data = response.json()
+    try:
+        response = requests.get(f"{api_endpoint}/fiscal-years")
+        response.raise_for_status()
+        data = response.json()
 
-    fiscal_start_dates = data["fiscal_start_date"]
-    fiscal_end_dates = data["fiscal_end_date"]
+        fiscal_start_dates = data["fiscal_start_date"]
+        fiscal_end_dates = data["fiscal_end_date"]
 
-    fiscal_years_df = pd.DataFrame({
-        'fiscal_start_date': fiscal_start_dates.values(),
-        'fiscal_end_date': fiscal_end_dates.values()
-    })
+        fiscal_years_df = pd.DataFrame({
+            'fiscal_start_date': fiscal_start_dates.values(),
+            'fiscal_end_date': fiscal_end_dates.values()
+        })
 
-    fiscal_years_df['fiscal_year'] = pd.to_datetime(fiscal_years_df['fiscal_start_date']).dt.year.astype(str) + '-' + pd.to_datetime(fiscal_years_df['fiscal_end_date']).dt.year.astype(str)
+        fiscal_years_df['fiscal_year'] = pd.to_datetime(fiscal_years_df['fiscal_start_date']).dt.year.astype(str) + '-' + pd.to_datetime(fiscal_years_df['fiscal_end_date']).dt.year.astype(str)
 
-    return fiscal_years_df
+        return fiscal_years_df
+    except:
+        return pd.DataFrame.from_dict({})

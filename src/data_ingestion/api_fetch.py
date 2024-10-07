@@ -84,7 +84,6 @@ def parse_json_and_insert(api_data):
         main_data.append(main_entry)
     
     df_main = pd.DataFrame(main_data)
-    print('testttttt',df_main)
     df_nested = pd.DataFrame(nested_data)
     print(df_nested)
 
@@ -99,7 +98,6 @@ def ingest_raw_data():
         parse_json_and_insert(api_data)
     
         # raw ingest done
-        # sync dbo tables
     else:
         print("No data fetched from API.")
 

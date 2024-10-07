@@ -5,7 +5,6 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dotenv import load_dotenv
 import warnings
-from services.employee import load_employee_details
 from services.fiscal import load_fiscal_years
 from services.leave import load_data, load_leave_types
 from services.upload import upload_file
@@ -56,33 +55,40 @@ with st.sidebar:
     st.header("Filter Options")
     
     fiscal_years_df = load_fiscal_years()
-    fiscal_year_dict = dict(zip(fiscal_years_df['fiscal_year'], fiscal_years_df['fiscal_start_date'].astype(str) + ' - ' + fiscal_years_df['fiscal_end_date'].astype(str)))
-    
-    # Add "All" option to fiscal years
-    fiscal_year_options = ["All"] + list(fiscal_year_dict.keys())
-    selected_fiscal_year = st.selectbox("Select Fiscal Year", options=fiscal_year_options)
+    if(not fiscal_years_df.empty):
+        fiscal_year_dict = dict(zip(fiscal_years_df['fiscal_year'], fiscal_years_df['fiscal_start_date'].astype(str) + ' - ' + fiscal_years_df['fiscal_end_date'].astype(str)))
+        
+        # Add "All" option to fiscal years
+        fiscal_year_options = ["All"] + list(fiscal_year_dict.keys())
+        selected_fiscal_year = st.selectbox("Select Fiscal Year", options=fiscal_year_options)
 
-    if selected_fiscal_year == "All":
-        start_date = pd.to_datetime(fiscal_years_df['fiscal_start_date'].min())
-        end_date = pd.to_datetime(fiscal_years_df['fiscal_end_date'].max())
+        if selected_fiscal_year == "All":
+            start_date = pd.to_datetime(fiscal_years_df['fiscal_start_date'].min())
+            end_date = pd.to_datetime(fiscal_years_df['fiscal_end_date'].max())
+        else:
+            fiscal_year_dates = fiscal_years_df[fiscal_years_df['fiscal_year'] == selected_fiscal_year].iloc[0]
+            start_date = pd.to_datetime(fiscal_year_dates['fiscal_start_date'])
+            end_date = pd.to_datetime(fiscal_year_dates['fiscal_end_date'])
+
+        start_date = st.date_input("Start Date", start_date)
+        end_date = st.date_input("End Date", end_date)
     else:
-        fiscal_year_dates = fiscal_years_df[fiscal_years_df['fiscal_year'] == selected_fiscal_year].iloc[0]
-        start_date = pd.to_datetime(fiscal_year_dates['fiscal_start_date'])
-        end_date = pd.to_datetime(fiscal_year_dates['fiscal_end_date'])
-
-    start_date = st.date_input("Start Date", start_date)
-    end_date = st.date_input("End Date", end_date)
+        start_date = datetime.now()
+        end_date = datetime.now()
 
     leave_types_df = load_leave_types()
-    leave_type_dict = dict(zip(leave_types_df['id'], leave_types_df['leave_type']))
+    selected_leave_type = 'ALL'
+
+    if(not leave_types_df.empty):
+        leave_type_dict = dict(zip(leave_types_df['id'], leave_types_df['leave_type']))
     
-    # Add "All" option to leave types
-    leave_type_options = [("All", "All")] + list(leave_type_dict.items())
-    selected_leave_type = st.selectbox(
-        "Select Leave Type",
-        options=[id for id, _ in leave_type_options],
-        format_func=lambda x: dict(leave_type_options)[x]
-    )
+        # Add "All" option to leave types
+        leave_type_options = [("All", "All")] + list(leave_type_dict.items())
+        selected_leave_type = st.selectbox(
+            "Select Leave Type",
+            options=[id for id, _ in leave_type_options],
+            format_func=lambda x: dict(leave_type_options)[x]
+        )
 
     st.header("Data Upload")
     if st.button("Upload New File"):
@@ -99,7 +105,7 @@ if st.session_state.get('show_file_upload', False):
         uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"], on_change=upload_file, key='file')
 else:
     # Load data based on selections
-    selected_leave_type_id = None if selected_leave_type == "All" else selected_leave_type
+    selected_leave_type_id = None if selected_leave_type == "All" or selected_leave_type ==None else selected_leave_type
     df = load_data(start_date, end_date, selected_leave_type_id)
 
     def calculate_leave_days(df):
