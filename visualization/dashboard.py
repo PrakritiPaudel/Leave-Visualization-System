@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 import warnings
+import time
 from services.fiscal import load_fiscal_years
 from services.leave import load_data, load_leave_types
 from services.upload import upload_file
@@ -16,7 +17,25 @@ load_dotenv(dotenv_path='visualization/.env.streamlit')
 # Set up Streamlit page configuration
 st.set_page_config(page_title="Leave Visualization Dashboard", page_icon="🌴", layout="wide")
 
-# Custom CSS to improve the look and feel
+# Initialize session state for data caching and update timing
+if 'last_update_time' not in st.session_state:
+    st.session_state.last_update_time = datetime.now() - timedelta(seconds=31)  # Force initial update
+if 'current_data' not in st.session_state:
+    st.session_state.current_data = None
+
+# Function to check if data needs updating
+def should_update_data():
+    return (datetime.now() - st.session_state.last_update_time).total_seconds() >= 30
+
+# Function to update data
+def update_data(start_date, end_date, selected_leave_type_id):
+    if should_update_data():
+        st.session_state.current_data = load_data(start_date, end_date, selected_leave_type_id)
+        st.session_state.last_update_time = datetime.now()
+        return True
+    return False
+
+# Custom CSS remains the same as in your original code
 st.markdown("""
     <style>
     .main { padding: 2rem; }
@@ -33,17 +52,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🌴 Leave Visualization Dashboard")
-
-# Custom CSS to change sidebar background color
+# Sidebar CSS remains the same as in your original code
 st.markdown("""
     <style>
-    /* Change background color of the sidebar */
     [data-testid="stSidebar"] {
         background-color: #ADD8E6;
     }
-
-    /* Optional: Add some padding */
     [data-testid="stSidebar"] .css-1d391kg {
         padding: 1rem;
     }
@@ -55,10 +69,11 @@ with st.sidebar:
     st.header("Filter Options")
     
     fiscal_years_df = load_fiscal_years()
-    if(not fiscal_years_df.empty):
-        fiscal_year_dict = dict(zip(fiscal_years_df['fiscal_year'], fiscal_years_df['fiscal_start_date'].astype(str) + ' - ' + fiscal_years_df['fiscal_end_date'].astype(str)))
+    if not fiscal_years_df.empty:
+        fiscal_year_dict = dict(zip(fiscal_years_df['fiscal_year'], 
+                                   fiscal_years_df['fiscal_start_date'].astype(str) + ' - ' + 
+                                   fiscal_years_df['fiscal_end_date'].astype(str)))
         
-        # Add "All" option to fiscal years
         fiscal_year_options = ["All"] + list(fiscal_year_dict.keys())
         selected_fiscal_year = st.selectbox("Select Fiscal Year", options=fiscal_year_options)
 
@@ -79,10 +94,8 @@ with st.sidebar:
     leave_types_df = load_leave_types()
     selected_leave_type = 'ALL'
 
-    if(not leave_types_df.empty):
+    if not leave_types_df.empty:
         leave_type_dict = dict(zip(leave_types_df['id'], leave_types_df['leave_type']))
-    
-        # Add "All" option to leave types
         leave_type_options = [("All", "All")] + list(leave_type_dict.items())
         selected_leave_type = st.selectbox(
             "Select Leave Type",
@@ -96,6 +109,9 @@ with st.sidebar:
     else:
         st.session_state.show_file_upload = False
 
+# Create placeholder for update status
+update_status = st.empty()
+
 # Create tabs
 tab1, tab2, tab3 = st.tabs(["Overview", "Employee Analysis", "Today's Leaves"])
 
@@ -104,10 +120,20 @@ if st.session_state.get('show_file_upload', False):
         st.header("Load new file from device or drag it here")
         uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"], on_change=upload_file, key='file')
 else:
-    # Load data based on selections
-    selected_leave_type_id = None if selected_leave_type == "All" or selected_leave_type ==None else selected_leave_type
-    df = load_data(start_date, end_date, selected_leave_type_id)
+    # Long polling update loop
+    selected_leave_type_id = None if selected_leave_type == "All" or selected_leave_type is None else selected_leave_type
+    
+    # Update data if needed
+    data_updated = update_data(start_date, end_date, selected_leave_type_id)
+    
+    # Get current data from session state
+    df = st.session_state.current_data
 
+    if data_updated:
+        update_time = st.session_state.last_update_time.strftime("%H:%M:%S")
+        update_status.success(f"Data updated at {update_time}")
+    
+    # Function to calculate leave days (same as in your original code)
     def calculate_leave_days(df):
         if 'leave_days' not in df.columns:
             if 'start_date' in df.columns and 'end_date' in df.columns:
@@ -470,3 +496,7 @@ else:
                 st.info("No employees are on leave today.")
         else:
             st.warning("No data available for today's leaves.")
+
+# Add an automatic refresh mechanism
+time.sleep(30)  # Small delay to prevent excessive updates
+st.rerun()
