@@ -14,7 +14,7 @@ load_dotenv()
 
 # # Get the api endpoint URL from the environment variable
 api_endpoint = os.getenv('FASTAPI_URL')
-print(api_endpoint)
+
 
 
 # Define default_args for the DAG
