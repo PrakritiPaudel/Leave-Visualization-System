@@ -258,7 +258,7 @@ else:
                         title='Total Leave Days by Status',
                         color='leave_status',
                         color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
-                        height=400
+                        height=450
                     )
                     leave_status_chart.update_layout(margin=dict(l=20, r=20, t=40, b=20))
                     st.plotly_chart(leave_status_chart, use_container_width=True)
@@ -269,7 +269,7 @@ else:
                         df,
                         names='leave_type',
                         title='Leave Type Distribution',
-                        height=400,
+                        height=450,
                         labels=leave_type_dict
                     )
                     leave_type_distribution.update_layout(margin=dict(l=20, r=20, t=40, b=20))
@@ -330,12 +330,18 @@ else:
 
                 st.markdown('<div class="employee-select-container">', unsafe_allow_html=True)
                 st.markdown('<div class="employee-select-label">Select an Employee:</div>', unsafe_allow_html=True)
-                selected_employee_name = st.selectbox("", options=employee_names, key="employee_select", label_visibility="collapsed")
+                # if 'leave_status' in employee_df.columns else None,
+                selected_employee_index = 0
+                if "selected_employee_name" in st.session_state:
+                    selected_employee_index=employee_names.index(st.session_state.selected_employee_name) if st.session_state.selected_employee_name and st.session_state.selected_employee_name in employee_names  else None 
+                st.session_state.selected_employee_name = st.selectbox("", options=employee_names, key="employee_select", label_visibility="collapsed",index=selected_employee_index)
+                selected_employee_name= st.session_state.selected_employee_name
                 st.markdown('</div>', unsafe_allow_html=True)
+
 
                 if selected_employee_name:
                     selected_employee_id = employee_name_to_id[selected_employee_name]
-                    employee_df = df[df[emp_id_col] == selected_employee_id]
+                    employee_df = df[df["employee_id"] == selected_employee_id]
 
                     if not employee_df.empty:
                         st.subheader(f"Leave Data for {selected_employee_name}")
@@ -349,7 +355,7 @@ else:
                                     employee_df,
                                     names='leave_type',
                                     title='Leave Type Distribution',
-                                    height=300,
+                                    height=400,
                                     labels=leave_type_dict
                                 )
                                 employee_leave_type.update_layout(margin=dict(l=20, r=20, t=40, b=20))
@@ -389,22 +395,25 @@ else:
                                 height=400,
                                 labels={'employee_leave_type': 'Leave Type'}
                             )
+                            # Update x-axis to show only dates
                             employee_leave_timeline.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+
                             st.plotly_chart(employee_leave_timeline, use_container_width=True)
+        
                         else:
                             st.warning("Required information for timeline chart is not available in the dataset.")
                         st.markdown('</div>', unsafe_allow_html=True)
 
-                        st.subheader("Detailed Leave Records")
-                        display_columns = [col for col in ['start_date', 'end_date', 'leave_type', 'leave_status', 'leave_days'] if col in employee_df.columns]
-                        if display_columns:
-                            styled_df = employee_df[display_columns].style.applymap(
-                                lambda x: 'color: green' if x == 'APPROVED' else ('color: red' if x == 'REJECTED' else ''),
-                                subset=['leave_status'] if 'leave_status' in display_columns else []
-                            )
-                            st.dataframe(styled_df)
-                        else:
-                            st.warning("No detailed leave records available to display.")
+                        # st.subheader("Detailed Leave Records")
+                        # display_columns = [col for col in ['start_date', 'end_date', 'leave_type', 'leave_status', 'leave_days'] if col in employee_df.columns]
+                        # if display_columns:
+                        #     styled_df = employee_df[display_columns].style.applymap(
+                        #         lambda x: 'color: green' if x == 'APPROVED' else ('color: red' if x == 'REJECTED' else ''),
+                        #         subset=['leave_status'] if 'leave_status' in display_columns else []
+                        #     )
+                        #     st.dataframe(styled_df)
+                        # else:
+                        #     st.warning("No detailed leave records available to display.")
                     else:
                         st.info(f"No leave data available for {selected_employee_name}.")
                 else:

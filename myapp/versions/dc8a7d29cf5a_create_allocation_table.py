@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('emp_id', sa.String(50), sa.ForeignKey('dbo.employee.emp_id', ondelete='CASCADE'), nullable=False),
         sa.Column('name', sa.String(100), nullable=False),
-        sa.Column('type', sa.String(50), nullable=False),
+        sa.Column('type', sa.String(50), nullable=True),
         schema='dbo'
     )
 

@@ -45,22 +45,16 @@ def create_schema():
         print(f"Error creating schema 'raw': {str(e)}")
 
 def ingest_api_data(API_ENDPOINT, headers):
-    all_data = []
-    page = 1
     while True:
-        params = {'page': page}
         try:
-            response = requests.get(API_ENDPOINT, headers=headers, params=params)
+            response = requests.get(API_ENDPOINT, headers=headers)
             response.raise_for_status()
             data = response.json()
-            all_data.extend(data['data'])
-            if not data.get('next_page'):
-                break
-            page += 1
+            return data['data']
         except requests.exceptions.RequestException as e:
-            print(f"Failed to fetch data from page {page}. Status code: {response.status_code} - {e}")
+            print(f"Failed to fetch data. Status code: {response.status_code} - {e}")
             break
-    return all_data
+    return []
 
 def insert_data_to_db(df, table_name, schema='raw'):
     try:
@@ -85,7 +79,7 @@ def parse_json_and_insert(api_data):
     
     df_main = pd.DataFrame(main_data)
     df_nested = pd.DataFrame(nested_data)
-    print(df_nested)
+    # print(df_nested)
 
     insert_data_to_db(df_main, 'api_data', schema='raw')
     insert_data_to_db(df_nested, 'allocation_data', schema='raw')

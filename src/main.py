@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import FastAPI,UploadFile,HTTPException
-from src.data_ingestion.api_fetch import ingest_raw_data, insert_data_to_db, create_schema
+from src.data_ingestion.api_fetch import ingest_raw_data
 from src.transformation.dbo.transform import transform_data
 from src.services.leave_service import find_leaves, find_leave_types
 from src.services.upload_service import populate_from_file
@@ -17,12 +17,12 @@ logger.setLevel(logging.DEBUG)
 
 @app.post("/ingest")
 async def api_fetch():
-    await ingest_raw_data()
+    ingest_raw_data()
     return {"message": "Raw data ingested"}
 
 @app.post("/transform")
 async def transform_raw_data():
-    await transform_data() 
+    transform_data() 
     return {"message": "Raw data transformed"}
 
 @app.get("/leaves")

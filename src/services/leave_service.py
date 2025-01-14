@@ -4,7 +4,7 @@ import pandas as pd
 def find_leaves(start_date, end_date, leave_type_id):
     # Query to fetch leave data within the selected date range
     query = f"""
-    SELECT l.employee_id, e.first_name, e.last_name, CONCAT(first_name,' ',last_name) as employee_name,  d2.designation_name, d.department_description,
+    SELECT DISTINCT l.employee_id, e.first_name, e.last_name, CONCAT(first_name,' ',last_name) as employee_name,  d2.designation_name, d.department_description,
              l.start_date, l.end_date, lt.leave_type,l.leave_status ,l.leave_days ,l.reason ,l.leave_type_id ,l.fiscal_id ,l.is_automated ,l.is_converted 
       FROM dbo.employee e
       LEFT JOIN dbo.department d ON d.id = e.department_id  
