@@ -37,4 +37,4 @@ jobs:
 
       # Added step to build and up all the containers
       - name: Build and start Docker containers
-        run: sudo docker-compose up --build
+        run: docker-compose up --build

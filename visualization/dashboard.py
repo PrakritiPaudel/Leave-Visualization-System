@@ -476,6 +476,6 @@ else:
                 fig.update_layout(title_text="Leave Status Distribution")
                 st.plotly_chart(fig)
             else:
-                st.info("No employees are on leave today.")
+                st.info("No employees are on leave today")
         else:
             st.warning("No data available for today's leaves.")
