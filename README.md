@@ -18,6 +18,7 @@ The project is composed of three main services:
 ## Setup and Installation
 
 1. Clone this repository:
+
    ```
    git clone git@github.com:PrakritiPaudel/Leave-Visualization-System.git
    cd Leave-Visualization-System
@@ -66,15 +67,19 @@ The application uses two separate docker networks for inter container communicat
 ## Running the Application
 
 1. Build and start all services:
+
    ```
    docker-compose up --build
    ```
 
-2. Access the main application at `http://localhost:5000`
+2. Run migrations for dbo schema and tables
+   alembic upgrade head
+3. Run dag ingest and transform data
+4. Access the main application at `http://localhost:5000`
 
-3. Access the Streamlit frontend at `http://localhost:8502`
+5. Access the Streamlit frontend at `http://localhost:8502`
 
-4. To stop the application:
+6. To stop the application:
    ```
    docker-compose down
    ```
@@ -100,11 +105,13 @@ Replace `[service_name]` with `app`, `streamlit`, or `postgres`.
 Airflow is used for managing workflows, particularly for data ingestion and transformation tasks.
 
 1. Start the Airflow scheduler:
+
    ```
    airflow scheduler
    ```
 
 2. Start the Airflow webserver:
+
    ```
    airflow webserver --port 8082
    ```
@@ -114,9 +121,9 @@ Airflow is used for managing workflows, particularly for data ingestion and tran
 4. To run ingestion and transformation tasks, navigate to the DAGs section in the Airflow web interface and trigger the transform_data_funtion DAG.
 
 ## System Architecture
+
 ![alt text](<Leave Visualization-1.png>)
 
-
 ## Leave Visualization Dashboard
-![alt text](image.png)
 
+![alt text](image.png)

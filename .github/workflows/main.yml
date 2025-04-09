@@ -35,7 +35,7 @@ jobs:
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-          echo "API_ENDPOINT=${{ secrets.API_ENDPOINT }}" >> .env.streamlit
+          echo "API_ENDPOINT=${{ secrets.API_ENDPOINT }}" >> ./visualization/.env.streamlit
           echo "API_ENDPOINT=${{ secrets.API_ENDPOINT }}" >> .env
           echo "BEARER_TOKEN=${{ secrets.BEARER_TOKEN }}" >> .env
           echo "SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }}" >> .env

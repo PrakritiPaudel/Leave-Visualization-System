@@ -31,45 +31,7 @@ config.set_main_option("sqlalchemy.url", str(database_url))  # Ensure the URL is
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-
 target_metadata = None  # Replace with your model's metadata if using autogenerate
-
-# Set the metadata object
-
-# start to run migrations in order
-# def run_migrations_in_custom_order():
-#     """Run migrations in a custom order."""
-#     # Define the order of revision IDs manually
-#     ordered_revisions = [
-#         "27b875bfea0b",  # revision id to create dbo schema
-#         "23fdc1d88362",  # revision id to create department table
-#         "99766294c058",  # Replace with your actual revision ID
-#         "eb012e3ab17e",
-#         "b774344d4d78",
-#         "f443bb587438",
-#         "b774344d4d78",
-#         "dc8a7d29cf5a"
-#         # Add more revisions as needed
-#     ]
-    
-#     # Fetch all available revisions
-#     available_revisions = {rev.revision: rev for rev in script.walk_revisions()}
-    
-#     # Apply migrations in the specified order
-#     for rev_id in ordered_revisions:
-#         if rev_id in available_revisions:
-#             version = available_revisions[rev_id]
-#             if context.is_offline_mode():
-#                 context.run_migrations_offline()
-#             else:
-#                 context.run_migrations_online()
-#         else:
-#             print(f"Revision {rev_id} not found in the available migrations.")
-# # end to run migrations in order
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
