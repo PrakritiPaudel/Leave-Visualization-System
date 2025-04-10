@@ -6,7 +6,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-load_dotenv(dotenv_path='visualization/.env.streamlit')
+load_dotenv(dotenv_path='.env.streamlit')
 # Get the API endpoint
 api_endpoint = os.getenv('API_ENDPOINT')
 if api_endpoint is None:

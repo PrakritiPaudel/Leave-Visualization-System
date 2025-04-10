@@ -14,7 +14,7 @@ import requests
 
 warnings.filterwarnings('ignore')
 
-load_dotenv(dotenv_path='visualization/.env.streamlit')
+load_dotenv(dotenv_path='.env.streamlit')
 
 # Set up Streamlit page configuration
 st.set_page_config(page_title="Leave Visualization Dashboard", page_icon="🌴", layout="wide")
