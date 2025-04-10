@@ -13,7 +13,7 @@ sys.path.append('/home/prakriti/project-leave-visualization-system')
 load_dotenv()
 
 # # Get the api endpoint URL from the environment variable
-api_endpoint = os.getenv('FASTAPI_URL')
+api_endpoint = os.getenv('SERVER_ENDPOINT')
 
 
 

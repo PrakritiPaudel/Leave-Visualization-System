@@ -22,9 +22,9 @@ services:
     ports:
       - "8502:8501" # Port for Streamlit
 
-    volumes:
-      # - ./visualization:/myapp/visualization # Mount only the visualization folder
-      - streamlit_data:/myapp/visualization
+    # volumes:
+    # - ./visualization:/myapp/visualization # Mount only the visualization folder
+    # - streamlit_data:/myapp/visualization
     depends_on:
       - app
     networks:
@@ -48,7 +48,6 @@ services:
 
 volumes:
   postgres_data:
-  streamlit_data:
 
 networks:
   backend:

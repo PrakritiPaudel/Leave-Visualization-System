@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements_streamlit.txt
 
 # Copy only the visualization directory into the container
 COPY ./visualization /myapp/visualization
+COPY .env.streamlit /myapp/.env.streamlit
 
 
 # # Copy the .env file into the container

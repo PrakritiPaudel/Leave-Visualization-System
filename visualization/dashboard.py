@@ -23,7 +23,7 @@ st.set_page_config(page_title="Leave Visualization Dashboard", page_icon="🌴",
 def login(username, password):
     """Authenticate user and return JWT token"""
     try:
-        api_endpoint = os.getenv('API_ENDPOINT')
+        api_endpoint = os.getenv('SERVER_ENDPOINT')
         response = requests.post(
             f"{api_endpoint}/login",
             json={"username": username, "password": password}
@@ -40,7 +40,7 @@ def login(username, password):
 def register(username, password):
     """Register a new user"""
     try:
-        api_endpoint = os.getenv('API_ENDPOINT')
+        api_endpoint = os.getenv('SERVER_ENDPOINT')
         response = requests.post(
             f"{api_endpoint}/register",
             json={"username": username, "password": password}
