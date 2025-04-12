@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import text
-from src.db import db_engine
+from backend.db import db_engine
 
 def populate_employee_leave_patterns():
     with db_engine.connect() as connection:

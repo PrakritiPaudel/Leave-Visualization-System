@@ -7,9 +7,9 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-load_dotenv(dotenv_path='/myapp/visualization/.env.streamlit')
+load_dotenv(dotenv_path='.env.streamlit')
 # Get the API endpoint
-api_endpoint = os.getenv('API_ENDPOINT')
+api_endpoint = os.getenv('SERVER_ENDPOINT')
 if api_endpoint is None:
     st.error("API_ENDPOINT environment variable is not set")
     raise ValueError("API_ENDPOINT environment variable is not set")

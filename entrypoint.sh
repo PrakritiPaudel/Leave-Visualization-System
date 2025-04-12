@@ -1,1 +1,1 @@
-alembic upgrade head && fastapi run src/main.py --port 5000
+alembic upgrade head && fastapi run backend/main.py --port 5000
