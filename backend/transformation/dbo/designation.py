@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import text
-from src.db import db_engine
+from backend.db import db_engine
 
 def populate_designation_data():
     query = """

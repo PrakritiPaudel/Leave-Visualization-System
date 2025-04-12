@@ -1,6 +1,6 @@
-from src.data_ingestion.api_fetch import insert_data_to_db, create_schema
-from src.transformation.dbo.transform import transform_data
-from src.services.supabase import upload_file_to_supabase
+from backend.data_ingestion.api_fetch import insert_data_to_db, create_schema
+from backend.transformation.dbo.transform import transform_data
+from backend.services.supabase import upload_file_to_supabase
 import pandas as pd
 from io import StringIO
 import json
