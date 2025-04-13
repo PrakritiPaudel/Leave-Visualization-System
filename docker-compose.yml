@@ -2,13 +2,14 @@ version: "3.8"
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
       - "5000:5000" # Adjust if necessary
 
     volumes:
       - .:/myapp # Ensure this path matches the WORKDIR in Dockerfile
-      # - .env:/myapp/.env  # Mount the .env file
     depends_on:
       - postgres
     networks:
@@ -21,10 +22,6 @@ services:
       dockerfile: Dockerfile.streamlit
     ports:
       - "8502:8501" # Port for Streamlit
-
-    # volumes:
-    # - ./visualization:/myapp/visualization # Mount only the visualization folder
-    # - streamlit_data:/myapp/visualization
     depends_on:
       - app
     networks:

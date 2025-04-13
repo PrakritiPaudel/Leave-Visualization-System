@@ -1,17 +1,10 @@
-from typing import Optional, Dict, Any
+from typing import Dict, Optional
 import os
-import jwt
 import datetime
 import logging
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File, Header
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from passlib.context import CryptContext
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
 # Import application services
@@ -22,14 +15,13 @@ from backend.services.upload_service import populate_from_file
 from backend.services.fiscal_service import find_fiscal_years
 from backend.services.employee_service import find_employee
 
-# Access environment variables
-BEARER_TOKEN = os.getenv('BEARER_TOKEN')
-API_ENDPOINT = os.getenv('API_ENDPOINT')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT', 5432)  # Default PostgreSQL port is 5432
-DB_NAME = os.getenv('DB_NAME')
+# Import authentication module
+from backend.services.auth import (
+    User, Token, LoginForm, RegisterForm, MessageResponse,
+    authenticate_user, create_access_token, get_user, pwd_context,
+    get_current_user, create_admin_user,
+    get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 # Initialize FastAPI app
 app = FastAPI(title="Leave Management API")
@@ -51,126 +43,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration for authentication
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")  # Use environment variable in production
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# OAuth2 scheme for token handling
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-# Database setup
-DATABASE_URL = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-# Define User model
-class UserModel(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# Database dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# API Models
-class User(BaseModel):
-    username: str
-
-class UserInDB(User):
-    hashed_password: str
-
-class Token(BaseModel):
-    token: str
-    token_type: str = "bearer"
-
-class LoginForm(BaseModel):
-    username: str
-    password: str
-
-class RegisterForm(BaseModel):
-    username: str
-    password: str
-
-class MessageResponse(BaseModel):
-    message: str
-
-# Authentication helper functions
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_user(db, username: str):
-    return db.query(UserModel).filter(UserModel.username == username).first()
-
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
-
-def create_access_token(data: dict, expires_delta: Optional[datetime.timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(token: str = Depends(oauth2_scheme), db = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid authentication credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except jwt.PyJWTError:
-        raise credentials_exception
-    user = get_user(db, username)
-    if user is None:
-        raise credentials_exception
-    return user
-
 # Create initial admin user at startup
 @app.on_event("startup")
-async def create_admin_user():
-    db = SessionLocal()
-    try:
-        admin_user = get_user(db, "admin")
-        if not admin_user:
-            admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
-            new_admin = UserModel(
-                username="admin",
-                hashed_password=pwd_context.hash(admin_password)
-            )
-            db.add(new_admin)
-            db.commit()
-            logger.info("Admin user created")
-    except Exception as e:
-        logger.error(f"Error creating admin user: {str(e)}")
-    finally:
-        db.close()
+async def initialize_admin():
+    await create_admin_user()
 
 # Routes for data ingestion and transformation
 @app.post("/ingest")

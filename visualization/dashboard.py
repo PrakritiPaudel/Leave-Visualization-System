@@ -726,7 +726,7 @@ else:
                                         employee_leave_type = px.pie(
                                             employee_df,
                                             names='leave_type',
-                                            title='Leave Type Distribution',
+                                            title='Individual Leave Category Breakdown',
                                             height=400
                                         )
                                         employee_leave_type.update_layout(margin=dict(l=20, r=20, t=40, b=20))
@@ -742,7 +742,7 @@ else:
                                             employee_df.groupby('leave_status').agg({'leave_days': 'sum'}).reset_index(),
                                             x='leave_status',
                                             y='leave_days',
-                                            title='Leave Days by Status',
+                                            title='Individual Leave Status Overview',
                                             color='leave_status',
                                             color_discrete_map={'APPROVED': 'green', 'REJECTED': 'red', 'Pending': 'yellow'},
                                             height=300
@@ -762,7 +762,7 @@ else:
                                         size='leave_days',
                                         color='leave_type',
                                         hover_data=['leave_status'] if 'leave_status' in employee_df.columns else None,
-                                        title='Leave History Timeline',
+                                        title='Employee Leave History Timeline',
                                         height=400,
                                         labels={'leave_type': 'Leave Type'}
                                     )
