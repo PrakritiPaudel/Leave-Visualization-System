@@ -17,7 +17,11 @@ if api_endpoint is None:
 
 def load_fiscal_years():
     try:
-        response = requests.get(f"{api_endpoint}/fiscal-years")
+        headers = {
+            'Authorization': f'Bearer {st.session_state.token}',
+            'Content-Type': 'application/json'
+        }
+        response = requests.get(f"{api_endpoint}/fiscal-years", headers=headers)
         response.raise_for_status()
         data = response.json()
 

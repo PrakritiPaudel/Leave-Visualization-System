@@ -20,7 +20,7 @@ from backend.services.auth import (
     User, Token, LoginForm, RegisterForm, MessageResponse,
     authenticate_user, create_access_token, get_user, pwd_context,
     get_current_user, create_admin_user,
-    get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES
+    get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES,get_admin_user
 )
 
 # Initialize FastAPI app
@@ -50,25 +50,30 @@ async def initialize_admin():
 
 # Routes for data ingestion and transformation
 @app.post("/ingest")
-async def api_fetch():
+async def api_fetch(current_user: UserModel = Depends(get_admin_user)):
     ingest_raw_data()
     return {"message": "Raw data ingested"}
 
 @app.post("/transform")
-async def transform_raw_data():
+async def transform_raw_data(current_user: UserModel = Depends(get_admin_user)):
     transform_data() 
     return {"message": "Raw data transformed"}
 
 @app.get("/leaves")
-async def get_leaves(start_date: str, end_date: str, leave_type: str|None=None):
+async def get_leaves(
+    start_date: str,
+    end_date: str,
+    leave_type: str | None = None,
+    current_user: UserModel = Depends(get_current_user)
+):
     return find_leaves(start_date, end_date, leave_type)
 
 @app.get("/leave-types")
-async def get_leave_types():
+async def get_leave_types(current_user: UserModel = Depends(get_current_user)):
     return find_leave_types()
 
 @app.get("/fiscal-years")
-async def get_fiscal_years():
+async def get_fiscal_years(current_user: UserModel = Depends(get_current_user)):
     return find_fiscal_years()
 
 # Routes for authentication and user management

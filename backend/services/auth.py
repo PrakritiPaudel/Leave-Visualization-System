@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import os
 import jwt
 import datetime
@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker, Session
 import logging
 
@@ -36,13 +36,14 @@ def get_db():
     finally:
         db.close()
 
-# Define User model
+# Define User model - Adding is_admin field
 class UserModel(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    is_admin = Column(Boolean, default=False)  # Add admin role flag
 
 # Create tables
 Base.metadata.create_all(bind=db_engine)
@@ -56,6 +57,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # API Models
 class User(BaseModel):
     username: str
+    is_admin: bool = False
 
 class UserInDB(User):
     hashed_password: str
@@ -118,20 +120,44 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise credentials_exception
     return user
 
-# Initialize admin user function
+# Add a new dependency for checking admin privileges
+async def get_admin_user(current_user: UserModel = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required for this operation",
+        )
+    return current_user
+
+# Initialize admin user function - Updated to set is_admin flag
+# Initialize admin user function - Updated to handle password securely
 async def create_admin_user():
     db = SessionLocal()
     try:
-        admin_user = get_user(db, "admin")
+        admin_user = get_user(db, "admin") 
+        
+        # Get admin credentials from environment variables
+        admin_username = os.getenv("ADMIN_USERNAME", "admin")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        
+        if not admin_password:
+            logger.warning("ADMIN_PASSWORD environment variable not set. Admin user creation skipped.")
+            return
+            
         if not admin_user:
-            admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
             new_admin = UserModel(
-                username="admin",
-                hashed_password=pwd_context.hash(admin_password)
+                username=admin_username,
+                hashed_password=pwd_context.hash(admin_password),
+                is_admin=True
             )
             db.add(new_admin)
             db.commit()
-            logger.info("Admin user created")
+            logger.info(f"Admin user '{admin_username}' created successfully")
+        elif not admin_user.is_admin:
+            # Ensure existing admin user has admin privileges
+            admin_user.is_admin = True
+            db.commit()
+            logger.info(f"Updated user '{admin_username}' with admin privileges")
     except Exception as e:
         logger.error(f"Error creating admin user: {str(e)}")
     finally:
