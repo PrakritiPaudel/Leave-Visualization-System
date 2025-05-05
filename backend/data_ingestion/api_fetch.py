@@ -37,9 +37,9 @@ engine = create_engine(DATABASE_URL)
 # Create the 'raw' schema if it doesn't exist
 def create_schema():
     try:
-        with engine.connect() as connection:
+        # Use with begin() instead of connect() to automatically handle transactions
+        with engine.begin() as connection:
             connection.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
-            connection.commit()
         print("Schema 'raw' created or already exists.")
     except SQLAlchemyError as e:
         print(f"Error creating schema 'raw': {str(e)}")
@@ -52,7 +52,9 @@ def ingest_api_data(API_ENDPOINT, headers):
             data = response.json()
             return data['data']
         except requests.exceptions.RequestException as e:
-            print(f"Failed to fetch data. Status code: {response.status_code} - {e}")
+            # Only access response.status_code if 'response' exists and was created
+            status_message = f"Status code: {response.status_code} - " if 'response' in locals() else ""
+            print(f"Failed to fetch data. {status_message}{e}")
             break
     return []
 

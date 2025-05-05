@@ -104,21 +104,39 @@ Replace `[service_name]` with `app`, `streamlit`, or `postgres`.
 
 Airflow is used for managing workflows, particularly for data ingestion and transformation tasks.
 
-1. Start the Airflow scheduler:
+1. Check your AIRFLOW_HOME
+   `echo $AIRFLOW_HOME`
+   If it returns empty or /, then it’s not set correctly.
+
+   `export AIRFLOW_HOME=~/airflow`
+
+   To make it permanent, add that line to your ~/.zshrc
+
+   `source ~/.zshrc`
+
+Once AIRFLOW_HOME is correctly set, move the file like this:
+
+a. create the missing dags/ directory:
+`mkdir -p $AIRFLOW_HOME/dags`
+
+b.Run move command
+`mv etl/transform_data_dag.py $AIRFLOW_HOME/dags/`
+
+2. Start the Airflow scheduler:
 
    ```
    airflow scheduler
    ```
 
-2. Start the Airflow webserver:
+3. Start the Airflow webserver:
 
    ```
    airflow webserver --port 8082
    ```
 
-3. Access the Airflow web interface at `http://localhost:8082/home`
+4. Access the Airflow web interface at `http://localhost:8082/home`
 
-4. To run ingestion and transformation tasks, navigate to the DAGs section in the Airflow web interface and trigger the transform_data_funtion DAG.
+5. To run ingestion and transformation tasks, navigate to the DAGs section in the Airflow web interface and trigger the transform_data_funtion DAG.
 
 ## System Architecture
 

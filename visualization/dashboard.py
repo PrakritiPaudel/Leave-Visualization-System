@@ -19,7 +19,39 @@ load_dotenv(dotenv_path='.env.streamlit')
 # Set up Streamlit page configuration
 st.set_page_config(page_title="Leave Visualization Dashboard", page_icon="🌴", layout="wide")
 
-# Authentication functions
+def get_user_profile(token):
+    """Fetch the current user's profile info including admin status"""
+    try:
+        api_endpoint = os.getenv('SERVER_ENDPOINT')
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get(f"{api_endpoint}/user-profile", headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        return {"username": "", "is_admin": False}  # Default if API call fails
+    except Exception as e:
+        st.error(f"Error fetching user profile: {str(e)}")
+        return {"username": "", "is_admin": False}  # Default if exception occurs
+
+# # Authentication functions
+# def login(username, password):
+#     """Authenticate user and return JWT token"""
+#     try:
+#         api_endpoint = os.getenv('SERVER_ENDPOINT')
+#         response = requests.post(
+#             f"{api_endpoint}/login",
+#             json={"username": username, "password": password}
+#         )
+        
+#         if response.status_code == 200:
+#             data = response.json()
+#             return data.get("token")
+#         return None
+#     except Exception as e:
+#         st.error(f"Login error: {str(e)}")
+#         return None
+
+# Modified login function that gets full profile
 def login(username, password):
     """Authenticate user and return JWT token"""
     try:
@@ -31,7 +63,23 @@ def login(username, password):
         
         if response.status_code == 200:
             data = response.json()
-            return data.get("token")
+            token = data.get("token")
+            
+            if token:
+                # Store token and username
+                st.session_state.token = token
+                st.session_state.username = username
+                
+                # Get complete user profile
+                user_profile = get_user_profile(token)
+                st.session_state.is_admin = user_profile.get("is_admin", False)
+                
+                # For debugging
+                st.write(f"Debug - User profile: {user_profile}")
+                st.write(f"Debug - Is admin: {st.session_state.is_admin}")
+                
+                return token
+            return None
         return None
     except Exception as e:
         st.error(f"Login error: {str(e)}")
@@ -439,10 +487,10 @@ else:
             )
         else:
             leave_type_dict = {}  # Initialize empty dict if no leave types loaded
-
+        print('ggggggggggggg',st.session_state.get("user_role"))
         # Assuming the username is stored in session state
-        if st.session_state.get("username") == "admin":
-            # Display the Data Upload section only for the "admin"
+        # Show file upload option only for admin users
+        if st.session_state.get("user_role") == "admin":
             st.header("File Upload")
             if st.button("Upload New File"):
                 st.session_state.show_file_upload = True
@@ -455,7 +503,7 @@ else:
     if st.session_state.get('show_file_upload', False):
         with tab1:
             st.header("Load new file from device or drag it here")
-            uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"], on_change=upload_file, key='file')
+            uploaded_file = st.file_uploader("Choose a file", type=["csv"], on_change=upload_file, key='file')
     else:
         # Load data based on selections
         selected_leave_type_id = None if selected_leave_type == "All" else selected_leave_type

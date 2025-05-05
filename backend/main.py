@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 import os
 import datetime
 import logging
@@ -20,7 +20,7 @@ from backend.services.auth import (
     User, Token, LoginForm, RegisterForm, MessageResponse,
     authenticate_user, create_access_token, get_user, pwd_context,
     get_current_user, create_admin_user,
-    get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES
+    get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES,get_admin_user
 )
 
 # Initialize FastAPI app
@@ -43,32 +43,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create initial admin user at startup
-@app.on_event("startup")
-async def initialize_admin():
-    await create_admin_user()
+# # Create initial admin user at startup
+# @app.on_event("startup")
+# async def initialize_admin():
+#     await create_admin_user()
 
 # Routes for data ingestion and transformation
 @app.post("/ingest")
+# async def api_fetch(current_user: UserModel = Depends(get_admin_user)):
 async def api_fetch():
     ingest_raw_data()
     return {"message": "Raw data ingested"}
 
 @app.post("/transform")
+# async def transform_raw_data(current_user: UserModel = Depends(get_admin_user)):
 async def transform_raw_data():
     transform_data() 
     return {"message": "Raw data transformed"}
 
 @app.get("/leaves")
-async def get_leaves(start_date: str, end_date: str, leave_type: str|None=None):
+async def get_leaves(
+    start_date: str,
+    end_date: str,
+    leave_type: str | None = None,
+    current_user: UserModel = Depends(get_current_user)
+):
     return find_leaves(start_date, end_date, leave_type)
 
 @app.get("/leave-types")
-async def get_leave_types():
+async def get_leave_types(current_user: UserModel = Depends(get_current_user)):
     return find_leave_types()
 
 @app.get("/fiscal-years")
-async def get_fiscal_years():
+async def get_fiscal_years(current_user: UserModel = Depends(get_current_user)):
     return find_fiscal_years()
 
 # Routes for authentication and user management
@@ -113,9 +120,20 @@ async def register_user(form_data: RegisterForm, db = Depends(get_db)):
             detail=f"Database error: {str(e)}"
         )
 
-@app.get("/profile", response_model=User)
-async def get_profile(current_user: UserModel = Depends(get_current_user)):
-    return {"username": current_user.username}
+# @app.get("/profile", response_model=User)
+# async def get_profile(current_user: UserModel = Depends(get_current_user)):
+#     return {"username": current_user.username}
+
+# added for upload functionality
+@app.get("/user-profile", response_model=Dict[str, Any])
+async def get_user_profile(current_user: UserModel = Depends(get_current_user)):
+    """Return detailed user profile information including admin status"""
+    return {
+        "username": current_user.username,
+        "is_admin": current_user.is_admin, 
+        "id": current_user.id
+    }
+    print ('admingggggggg',is_admin)
 
 @app.post("/upload", response_model=MessageResponse)
 async def upload_file(

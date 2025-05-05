@@ -15,8 +15,6 @@ load_dotenv()
 # # Get the api endpoint URL from the environment variable
 api_endpoint = os.getenv('SERVER_ENDPOINT')
 
-
-
 # Define default_args for the DAG
 default_args = {
     'owner': 'airflow',
@@ -32,7 +30,7 @@ dag = DAG(
     'transform_data_function',
     default_args=default_args,
     description='A DAG to transform and load data into dbo tables',
-    schedule_interval='@daily',  # Adjust the schedule as needed
+    schedule_interval='*/10 * * * *',  # Every 10 minutes,  # Adjust the schedule as needed
     start_date=days_ago(1),
     catchup=False,
 )
