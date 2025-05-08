@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, date
+import time
+from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 import warnings
 from services.fiscal import load_fiscal_years
@@ -19,6 +20,30 @@ load_dotenv(dotenv_path='.env.streamlit')
 # Set up Streamlit page configuration
 st.set_page_config(page_title="Leave Visualization Dashboard", page_icon="🌴", layout="wide")
 
+# Implement polling for real time data: Start
+# Initialize session state for data caching and update timing
+# if 'last_update_time' not in st.session_state:
+#     st.session_state.last_update_time = datetime.now() - timedelta(seconds=31)  # Force initial update
+if 'current_data' not in st.session_state:
+    st.session_state.current_data = None
+
+# Function to check if data needs updating
+def should_update_data():
+    # In first load return true
+    if('last_update_time' not in st.session_state): 
+        return True
+    return (datetime.now() - st.session_state.last_update_time).total_seconds() >= 30
+
+# Function to update data
+def update_data(start_date, end_date, selected_leave_type_id):
+    if should_update_data():
+        st.session_state.current_data = load_data(start_date, end_date, selected_leave_type_id)
+        st.session_state.last_update_time = datetime.now()
+        return True
+    return False
+
+# Implement polling for real time data: End
+
 def get_user_profile(token):
     """Fetch the current user's profile info including admin status"""
     try:
@@ -34,22 +59,6 @@ def get_user_profile(token):
         return {"username": "", "is_admin": False}  # Default if exception occurs
 
 # # Authentication functions
-# def login(username, password):
-#     """Authenticate user and return JWT token"""
-#     try:
-#         api_endpoint = os.getenv('SERVER_ENDPOINT')
-#         response = requests.post(
-#             f"{api_endpoint}/login",
-#             json={"username": username, "password": password}
-#         )
-        
-#         if response.status_code == 200:
-#             data = response.json()
-#             return data.get("token")
-#         return None
-#     except Exception as e:
-#         st.error(f"Login error: {str(e)}")
-#         return None
 
 # Modified login function that gets full profile
 def login(username, password):
@@ -490,13 +499,23 @@ else:
         print('ggggggggggggg',st.session_state.get("user_role"))
         # Assuming the username is stored in session state
         # Show file upload option only for admin users
-        if st.session_state.get("user_role") == "admin":
+        if st.session_state.get("is_admin"):
+            # Check if the user is an admin
             st.header("File Upload")
             if st.button("Upload New File"):
                 st.session_state.show_file_upload = True
             else:
                 st.session_state.show_file_upload = False
 
+    # Implement polling for real time data
+    # Create placeholder for update status
+    update_status = st.empty()
+    
+    # Check both if it exists and is not None in a single condition
+    if "last_update_time" in st.session_state and st.session_state.last_update_time is not None:
+        update_time = st.session_state.last_update_time.strftime("%H:%M:%S")
+        update_status.success(f"Data updated at {update_time}")
+    
     # Create tabs - only if authenticated
     tab1, tab2, tab3 = st.tabs(["Overview", "Employee Analysis", "Today's Leaves"])
 
@@ -507,6 +526,12 @@ else:
     else:
         # Load data based on selections
         selected_leave_type_id = None if selected_leave_type == "All" else selected_leave_type
+        
+        # Update data if needed
+        data_updated = update_data(start_date, end_date, selected_leave_type_id)
+
+        # Get current data from session state
+        df = st.session_state.current_data
         
         # Load data function with authentication
         df = load_data(start_date, end_date, selected_leave_type_id)
@@ -885,3 +910,7 @@ else:
                     st.info("No employees are on leave today.")
             else:
                 st.warning("No data available for today's leaves.")
+
+# Add an automatic refresh mechanism
+time.sleep(30)  # 30 seconds
+st.rerun()

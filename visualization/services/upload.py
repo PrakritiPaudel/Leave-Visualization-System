@@ -16,8 +16,19 @@ if api_endpoint is None:
 
 def upload_file():
     file = st.session_state['file']
+    
     if file is None:
         return
+    
+    headers = {
+        'Authorization': f'Bearer {st.session_state.token}'
+    }
+    
+    # Prepare the file for upload
     files = {"file": (file.name, file.getvalue(), file.type)}
-    response = requests.post(f"{api_endpoint}/upload", files=files)
+    
+    # Make the post request - the requests library will automatically set
+    # the correct Content-Type header for multipart/form-data
+    response = requests.post(f"{api_endpoint}/upload", files=files, headers=headers)
+    
     return response

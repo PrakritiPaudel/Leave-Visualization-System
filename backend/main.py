@@ -32,7 +32,7 @@ logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.DEBUG)
 
 # Configuration for API endpoint
-api_endpoint = os.getenv('API_ENDPOINT', 'http://localhost:8000')
+api_endpoint = os.getenv('API_ENDPOINT', 'http://localhost:8000') 
 
 # Enable CORS
 app.add_middleware(
@@ -133,20 +133,16 @@ async def get_user_profile(current_user: UserModel = Depends(get_current_user)):
         "is_admin": current_user.is_admin, 
         "id": current_user.id
     }
-    print ('admingggggggg',is_admin)
 
-@app.post("/upload", response_model=MessageResponse)
+@app.post("/upload")
 async def upload_file(
-    file: UploadFile = File(...),
+    file: UploadFile = File(...), #File parameter is required
     current_user: UserModel = Depends(get_current_user)
 ):
-    # Process the file
+    # Upload the file
+    # print("File received:", file.filename)
     await populate_from_file(file)
     return {"message": "File uploaded successfully"}
-
-@app.get("/health", response_model=Dict[str, str])
-async def health_check():
-    return {"status": "healthy"}
 
 # Main entry point for the application
 if __name__ == "__main__":
