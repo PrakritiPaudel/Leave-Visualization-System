@@ -496,7 +496,6 @@ else:
             )
         else:
             leave_type_dict = {}  # Initialize empty dict if no leave types loaded
-        print('ggggggggggggg',st.session_state.get("user_role"))
         # Assuming the username is stored in session state
         # Show file upload option only for admin users
         if st.session_state.get("is_admin"):
@@ -911,6 +910,19 @@ else:
             else:
                 st.warning("No data available for today's leaves.")
 
-# Add an automatic refresh mechanism
-time.sleep(30)  # 30 seconds
-st.rerun()
+# # Add an automatic refresh mechanism
+# time.sleep(30)  # 30 seconds
+# st.rerun()
+
+if __name__ == "__main__":
+    # Add configuration for automatic refresh
+    st.markdown("""
+        <script>
+            function reloadPage() {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 30000); // 30 seconds
+            }
+            reloadPage();
+        </script>
+    """, unsafe_allow_html=True)
