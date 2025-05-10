@@ -11,7 +11,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     timeout-minutes: 120 # Increase the timeout to 2 hours
@@ -45,13 +47,13 @@ jobs:
       - name: Build Docker container
         run: docker-compose up -d --build
 
-      # Wait for the 'api' service to be running (simple delay)
-      - name: Wait for API service
-        run: sleep 5 # Adjust the sleep time as needed
+      - name: Check running containers
+        run: docker-compose ps
 
       - name: Run unit tests in Docker
         run: |
-          docker-compose exec -T api pytest backend/tests -v
+          # First attempt to run directly with docker-compose run
+          docker-compose run --rm api pytest backend/tests -v
 
       - name: Get Runner IP
         run: |
