@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
 # Controls when the workflow will run
@@ -48,6 +46,10 @@ jobs:
       # Added step to build and start all docker container
       - name: Build Docker container
         run: docker-compose up -d --build
+
+      - name: Run unit tests in Docker
+        run: |
+          docker-compose exec -T api pytest backend/tests -v
 
       - name: Get Runner IP
         run: |
