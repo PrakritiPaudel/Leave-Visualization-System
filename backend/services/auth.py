@@ -128,37 +128,3 @@ async def get_admin_user(current_user: UserModel = Depends(get_current_user)):
             detail="Admin privileges required for this operation",
         )
     return current_user
-
-# Initialize admin user function - Updated to set is_admin flag
-# Initialize admin user function - Updated to handle password securely
-async def create_admin_user():
-    db = SessionLocal()
-    try:
-        admin_user = get_user(db, "admin") 
-        
-        # Get admin credentials from environment variables
-        admin_username = os.getenv("ADMIN_USERNAME", "admin")
-        admin_password = os.getenv("ADMIN_PASSWORD")
-        
-        if not admin_password:
-            logger.warning("ADMIN_PASSWORD environment variable not set. Admin user creation skipped.")
-            return
-            
-        if not admin_user:
-            new_admin = UserModel(
-                username=admin_username,
-                hashed_password=pwd_context.hash(admin_password),
-                is_admin=True
-            )
-            db.add(new_admin)
-            db.commit()
-            logger.info(f"Admin user '{admin_username}' created successfully")
-        elif not admin_user.is_admin:
-            # Ensure existing admin user has admin privileges
-            admin_user.is_admin = True
-            db.commit()
-            logger.info(f"Updated user '{admin_username}' with admin privileges")
-    except Exception as e:
-        logger.error(f"Error creating admin user: {str(e)}")
-    finally:
-        db.close()

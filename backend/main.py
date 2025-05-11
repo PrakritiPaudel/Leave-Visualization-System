@@ -19,7 +19,7 @@ from backend.services.employee_service import find_employee
 from backend.services.auth import (
     User, Token, LoginForm, RegisterForm, MessageResponse,
     authenticate_user, create_access_token, get_user, pwd_context,
-    get_current_user, create_admin_user,
+    get_current_user,
     get_db, UserModel, ACCESS_TOKEN_EXPIRE_MINUTES,get_admin_user
 )
 
@@ -42,11 +42,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# # Create initial admin user at startup
-# @app.on_event("startup")
-# async def initialize_admin():
-#     await create_admin_user()
 
 # Routes for data ingestion and transformation
 @app.post("/ingest")
@@ -119,10 +114,6 @@ async def register_user(form_data: RegisterForm, db = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error: {str(e)}"
         )
-
-# @app.get("/profile", response_model=User)
-# async def get_profile(current_user: UserModel = Depends(get_current_user)):
-#     return {"username": current_user.username}
 
 # added for upload functionality
 @app.get("/user-profile", response_model=Dict[str, Any])
