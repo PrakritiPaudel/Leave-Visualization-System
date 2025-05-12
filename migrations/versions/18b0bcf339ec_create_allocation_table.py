@@ -1,8 +1,8 @@
-"""create allocation table
+"""create_allocation_table
 
-Revision ID: dc8a7d29cf5a
-Revises: 91d0f90d6eda
-Create Date: 2024-08-29 10:57:10.368925
+Revision ID: 18b0bcf339ec
+Revises: 000006
+Create Date: 2025-05-08 08:22:53.983502
 
 """
 from typing import Sequence, Union

@@ -73,8 +73,11 @@ The application uses two separate docker networks for inter container communicat
    ```
 
 2. Run migrations for dbo schema and tables
-   alembic upgrade head
-3. Run dag ingest and transform data
+
+   `alembic upgrade head`
+
+3. Run dag: ingest and transform data at `http://localhost:8082`
+
 4. Access the main application at `http://localhost:5000`
 
 5. Access the Streamlit frontend at `http://localhost:8502`
@@ -104,23 +107,11 @@ Replace `[service_name]` with `app`, `streamlit`, or `postgres`.
 
 Airflow is used for managing workflows, particularly for data ingestion and transformation tasks.
 
-1. Check your AIRFLOW_HOME
-   `echo $AIRFLOW_HOME`
-   If it returns empty or /, then it’s not set correctly.
+1. Go to airflow.cfg
+   `code ~/airflow/airflow.cfg`
 
-   `export AIRFLOW_HOME=~/airflow`
-
-   To make it permanent, add that line to your ~/.zshrc
-
-   `source ~/.zshrc`
-
-Once AIRFLOW_HOME is correctly set, move the file like this:
-
-a. create the missing dags/ directory:
-`mkdir -p $AIRFLOW_HOME/dags`
-
-b.Run move command
-`mv etl/transform_data_dag.py $AIRFLOW_HOME/dags/`
+   Change the dags folder to your current local directory
+   `dags_folder = /home/prakriti/personal_project/Leave-Visualization-System/etl`
 
 2. Start the Airflow scheduler:
 

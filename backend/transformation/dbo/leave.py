@@ -11,6 +11,13 @@ def populate_leave_data():
             employees_df = pd.read_sql(employees_query, connection)
             employee_ids = set(employees_df['emp_id'])
 
+            # DELETE outdated leave records
+            delete_query = """
+            DELETE FROM dbo.leave
+            WHERE employee_id NOT IN (SELECT emp_id FROM dbo.employee);
+            """
+            connection.execute(text(delete_query))
+
             # Populate the leave table
             leave_query = """
             SELECT DISTINCT
@@ -39,12 +46,10 @@ def populate_leave_data():
                 AND CAST(f.fiscal_end_date AS DATE) = CAST(ad."fiscalEndDate" AS DATE);
             """
             leave_df = pd.read_sql(leave_query, connection)
-            print(leave_df)
 
             # Filter out rows with non-existent employee IDs
             leave_df = leave_df[leave_df['employee_id'].isin(employee_ids)]
-            print(2,employee_ids)
-            print(3, leave_df)
+
             for _, row in leave_df.iterrows():
                 upsert_leave_query = """
                 INSERT INTO dbo.leave (
@@ -85,4 +90,4 @@ def populate_leave_data():
                     'is_converted': row['is_converted']
                 })
 
-    print("Leave data upserted successfully.")
+    print("Leave data cleaned and upserted successfully.")

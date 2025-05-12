@@ -16,7 +16,11 @@ if api_endpoint is None:
 
 
 def load_employee_details(emp_id):
-    response = requests.get(f"{api_endpoint}/employee/{emp_id}")
+    headers = {
+            'Authorization': f'Bearer {st.session_state.token}',
+            'Content-Type': 'application/json'
+        }
+    response = requests.get(f"{api_endpoint}/employee/{emp_id}", headers=headers)
 
     # Check if the response status code is OK (200)
     if response.status_code != 200:

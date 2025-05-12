@@ -4,20 +4,28 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /myapp
 
-# Install PostgreSQL development libraries
+# Set environment variables to ignore SSL verification
+ENV PYTHONWARNINGS="ignore:Unverified HTTPS request"
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONHTTPSVERIFY=0
+
+# Install required libraries and SSL certificates
 RUN apt-get update --fix-missing && apt-get install -y \
     libpq-dev \
     gcc \
-    && apt-get clean
-    
+    ca-certificates \
+    && apt-get clean \
+    && update-ca-certificates
+
+# Copy requirements file
 COPY requirements_backend.txt /myapp/
 
-# Upgrade pip and setuptools
-RUN pip install --upgrade pip setuptools
+# Upgrade pip and setuptools with SSL verification disabled
+RUN pip config set global.trusted-host "pypi.org files.pythonhosted.org" && \
+    pip install --no-cache-dir --upgrade pip setuptools
 
-# Install dependencies
-
-RUN pip install --no-cache-dir -r requirements_backend.txt
+# Install dependencies with SSL verification disabled
+RUN pip --no-cache-dir install -r requirements_backend.txt
 
 # Copy the entire project directory into the container
 COPY . /myapp
@@ -25,5 +33,8 @@ COPY . /myapp
 # Expose port 5000
 EXPOSE 5000
 
+# Make entrypoint script executable
 RUN chmod +x ./entrypoint.sh
+
+# Set entrypoint
 ENTRYPOINT ["/bin/sh","./entrypoint.sh"]

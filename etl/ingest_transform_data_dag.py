@@ -27,7 +27,7 @@ default_args = {
 
 # Define the DAG
 dag = DAG(
-    'transform_data_function',
+    'ingest_transform_data_function',
     default_args=default_args,
     description='A DAG to transform and load data into dbo tables',
     schedule_interval='*/10 * * * *',  # Every 10 minutes,  # Adjust the schedule as needed
@@ -49,11 +49,11 @@ ingest_data_task = PythonOperator(
     dag=dag,
 )
 
-transform_data_task = PythonOperator(
-    task_id='transform_data_task',
+transform_task = PythonOperator(
+    task_id='transform_task',
     python_callable=tranform_and_load_data,
     dag=dag,
 )
 
 # Set task dependencies if you have multiple tasks, for now, it’s a single task
-ingest_data_task >> transform_data_task
+ingest_data_task >> transform_task
